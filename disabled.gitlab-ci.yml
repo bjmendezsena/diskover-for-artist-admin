@@ -1,0 +1,54 @@
+image: docker:latest
+
+services:
+  - docker:dind
+
+variables:
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+
+build-production:
+  only:
+    - release
+  stage: build
+  variables:
+    ENV: $ENV_PRODUCTION
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker pull $IMAGE_TAG || true
+    - echo "$ENV" > ".env"
+    - docker build --cache-from $IMAGE_TAG -t $IMAGE_TAG .
+    - docker push $IMAGE_TAG
+
+deploy-production:
+  only:
+    - release
+  stage: deploy
+  environment:
+    name: production
+  when: manual
+  variables:
+    ENV: $ENV_PRODUCTION
+    SERVER_USER: $SERVER_USER
+    SERVER_HOST: $SERVER_HOST
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+  script:
+    # create work folder
+    - ssh $SERVER_USER@$SERVER_HOST "mkdir -p $IMAGE_TAG"
+    # copy docker-compose yml and override to server
+    - scp docker-compose.yml $SERVER_USER@$SERVER_HOST:$IMAGE_TAG
+    # generate env file and override to server
+    - echo "$ENV" > ".env"
+    - scp .env $SERVER_USER@$SERVER_HOST:$IMAGE_TAG
+    # login to gitlab registry       
+    - ssh $SERVER_USER@$SERVER_HOST "docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY"
+    # then we cd to folder with docker-compose, run docker-compose pull to update images
+    - ssh $SERVER_USER@$SERVER_HOST "cd $IMAGE_TAG && docker pull $IMAGE_TAG"
+    # run services with `docker-compose up -d`
+    - ssh $SERVER_USER@$SERVER_HOST "cd $IMAGE_TAG && IMAGE_TAG=$IMAGE_TAG docker-compose up -d "

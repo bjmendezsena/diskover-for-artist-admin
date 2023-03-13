@@ -1,0 +1,28 @@
+.login_form_container {
+  margin: 0 auto !important;
+  padding-top: 83px;
+  max-width: 368px;
+  text-align: center;
+}
+.login_form_logo {
+  margin-bottom: 50px;
+  margin-top: 60px;
+  width: auto;
+  height: auto;
+}
+.login_form_forgot {
+  float: left;
+  color: #0a00ec;
+}
+
+.space {
+  margin-bottom: 10px !important;
+}
+
+.background_1_login{
+  width: calc(100vw - (100vw - 100%));
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  z-index: -1;
+}

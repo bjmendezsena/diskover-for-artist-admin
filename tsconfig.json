@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react",
+    "baseUrl": "src",
+    "noFallthroughCasesInSwitch": true
+  },
+  "importHelpers": true,
+  "include": [
+    "src"
+  ],
+  // "loaders": [
+  //   "require.resolve('style-loader')",
+  //   "require.resolve('css-loader')",
+  //   "require.resolve('sass-loader')"
+  // ]
+}
